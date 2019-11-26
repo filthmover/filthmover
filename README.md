@@ -36,6 +36,8 @@ Logging - Off
 Verbose - Off
 Time - files older than 7 days
 
+You will need to edit the list or site files and update the destination folder locations to match your requirements
+
 Usage:
   Execute the script in the folder where video files are stored with the following options
    --log -  Enable logging to "Script Folder Location"

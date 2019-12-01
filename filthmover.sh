@@ -28,6 +28,7 @@ LOGGING="OFF"
 FILEAGE=7
 TESTMODE="FALSE"
 
+
 ####################  FUNCTIONS  ###########################
 
 function log()
@@ -50,7 +51,7 @@ function findbuilder()
            Perf=("$1")
            FullName=`echo ${Perf//[[:space:]]/}`
            
-           FILEFINDER="find . -maxdepth 1 -type f -mtime +$FILEAGE -iname $FullName\* -o -iname \*$FullName\* -o -iname \"*"
+           FILEFINDER="find . -maxdepth 1 -type f -mtime +$FILEAGE -iname $FullName\* -o -mtime +$FILEAGE -iname \*$FullName\* -o -mtime +$FILEAGE -iname \"*"
                  
            PARMS=1
            for i in $Perf; do
@@ -141,6 +142,7 @@ MOVEDFILELIST=()
 SINGLESTAR=""
 MATCHFOUND=true
 RUNLOCATION="`dirname \"$0\"`"
+PERFCOUNT=0
 
 # Check there are some arguments or show usage
 
@@ -215,6 +217,16 @@ do
         shift # Remove --time= from processing
         ;;
         
+        -p=*|--performer=*)
+        echo $@
+        #IFS=-
+        
+        FINDPERF[$PERFCOUNT]="${arg#*=}"
+        MATCHFOUND=FALSE
+        ((PERFCOUNT ++))
+        shift
+        ;;
+        
         --everything)
         # find all lists in the runfolder
         # clear array (incase -i had preceeded)
@@ -254,6 +266,9 @@ if [ "${SINGLESTAR[*]}" != "" ]
     then
          IFS=' ' read SINGLESTAR <<<"${SINGLESTAR[*]}"  #Remove leading and trailing spaces
 fi
+
+# printf "[P %s]\n" "${FINDPERF[@]}"
+
 
 verbose "# COMMANDLINE: $@"
 verbose "#     LOGGING: $LOGGING"
@@ -417,11 +432,17 @@ do
      case $PROCESS in
        COPY)
                echo "Copying $FILETOMOVE to $FILELOCATION"
-               rsync --info=progress2 -t "$FILETOMOVE" "$FILELOCATION"      
+               if [ -f "$FILETOMOVE" ]
+                  then
+                      rsync --info=progress2 -t "$FILETOMOVE" "$FILELOCATION"
+               fi      
        ;;
        MOVE)
                echo "Moving $FILETOMOVE to $FILELOCATION"
-               mv -v "$FILETOMOVE" "$FILELOCATION"      
+               if [ -f "$FILETOMOVE" ]
+                  then 
+                      mv -v "$FILETOMOVE" "$FILELOCATION"
+               fi             
        ;;
      esac
    fi
